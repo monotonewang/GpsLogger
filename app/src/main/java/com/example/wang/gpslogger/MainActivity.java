@@ -69,6 +69,15 @@ public class MainActivity extends AppCompatActivity {
     String filePath = "/GPS data";
     private String fileName;
 
+    LocationType locationType = LocationType.Hight_Accuracy;
+
+    public enum LocationType {
+        Device_Sensors,//GPS 设备模式
+
+        Hight_Accuracy,
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +97,18 @@ public class MainActivity extends AppCompatActivity {
         tvLng = findViewById(R.id.tv_lng);
         llLatLng = findViewById(R.id.ll_latlng);
 
+
+        switch (locationType){
+            case Device_Sensors:
+
+                break;
+            case Hight_Accuracy:
+
+                if (!NetWorkUtils.isNetWorkConnected(mContext)) {
+                    toastShow("请检查网络连接");
+                }
+                break;
+        }
 
         //初始化定位
         initLocation();
@@ -397,9 +418,16 @@ public class MainActivity extends AppCompatActivity {
         AMapLocationClientOption mOption = new AMapLocationClientOption();
 
 
-//        mOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Device_Sensors);//GPS 设备模式
+        switch (locationType) {
+            case Device_Sensors:
+                mOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Device_Sensors);//GPS 设备模式
+                break;
+            case Hight_Accuracy:
+                mOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);//可选，设置定位模式，可选的模式有高精度、仅设备、仅网络。默认为高精度模式
+                break;
+        }
 
-        mOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);//可选，设置定位模式，可选的模式有高精度、仅设备、仅网络。默认为高精度模式
+
         mOption.setGpsFirst(false);//可选，设置是否gps优先，只在高精度模式下有效。默认关闭
         mOption.setHttpTimeOut(30000);//可选，设置网络请求超时时间。默认为30秒。在仅设备模式下无效
         mOption.setInterval(1000);//可选，设置定位间隔。默认为2秒
@@ -454,7 +482,8 @@ public class MainActivity extends AppCompatActivity {
                     sb.append("海拔: " + location.getAltitude() + "\n");
 
                     if (location.getAltitude() >= 0) {
-                        tvHeight.setText(location.getAltitude() + "");
+                        String format1 = new DecimalFormat("#.00").format(location.getAltitude());
+                        tvHeight.setText(format1 + "m");
                     }
 
                     sb.append("定位类型: " + location.getLocationType() + "\n");
@@ -479,9 +508,16 @@ public class MainActivity extends AppCompatActivity {
 
                     distance = distance + location.getSpeed() * 1;
 
-
-                    int distanceInt = new Float(distance).intValue();
-                    tvDistance.setText(distanceInt + "");
+                    distance = 2120.1f;
+                    if (distance < 1000) {
+                        int distanceInt = new Float(distance).intValue();
+                        tvDistance.setText(distanceInt + "m");
+                    } else {
+                        Float distanceInt = new Float(distance) / 1000;
+//                        String format1 = new DecimalFormat("#.00").format(distanceInt);
+                        String format1 = new DecimalFormat("#.##").format(distanceInt);
+                        tvDistance.setText(format1 + "km");
+                    }
 
                     sb.append("角    度    : " + location.getBearing() + "\n");
                     // 获取当前提供定位服务的卫星个数
