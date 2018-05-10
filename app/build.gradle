@@ -1,0 +1,60 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    defaultConfig {
+        applicationId "com.example.wang.gpslogger"
+        minSdkVersion 15
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+//        release {
+//            keyAlias 'chargeStation'
+//            keyPassword 'zhuokai123'
+//            storeFile file('chargeStation.jks')
+//            storePassword 'zhuokai123'
+//        }
+
+//        证书指纹:
+//        MD5: 80:0C:72:AD:CC:6F:81:DA:E2:9C:19:05:27:1D:FE:40
+//        SHA1: 7B:62:3B:EE:EA:53:6C:18:0E:7B:B5:CE:89:A0:EA:69:06:41:04:B8
+//        SHA256: 5B:81:E8:FE:92:13:43:49:4C:55:D8:C8:DC:DB:89:4F:57:02:31:AA:DC:99:97:A1:1D:EF:21:D4:05:6E
+
+        debug {
+            keyAlias 'key0'
+            keyPassword '123456'
+            storeFile file('gpslogger.jks')
+            storePassword '123456'
+        }
+
+        release {
+            keyAlias 'key0'
+            keyPassword '123456'
+            storeFile file('gpslogger.jks')
+            storePassword '123456'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    implementation 'com.android.support:support-v4:26.1.0'
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.amap.api:location:4.0.1'
+    //    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    //    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation files('libs/lite-orm-1.7.0.jar')
+}
