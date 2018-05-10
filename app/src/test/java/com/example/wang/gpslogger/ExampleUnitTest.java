@@ -20,10 +20,25 @@ public class ExampleUnitTest {
     @Test
     public void testList() {
 
-        int a = 1;
+        float distance = 11222f;
 
-        String format = new DecimalFormat("#00").format(a);
-
-        System.out.println(format);
+        Float distanceInt = new Float(distance) / 1000;
+        if (distance >= 9999) {
+            distance = 0;
+            distanceInt = 0f;
+        }
+        if (distance < 10) {
+            String format1 = new DecimalFormat("#0.000").format(distanceInt);
+            System.out.println(format1);
+        } else if (distance > 10 && distance < 100) {
+            String format1 = new DecimalFormat("#0.00").format(distanceInt);
+            System.out.println(format1);
+        } else if (distance >= 100 && distance < 1000) {
+            String format1 = new DecimalFormat("#0.01").format(distanceInt);
+            System.out.println(format1);
+        } else if (distance >= 1000) {
+            String format1 = new DecimalFormat("#").format(distanceInt);
+            System.out.println(format1);
+        }
     }
 }

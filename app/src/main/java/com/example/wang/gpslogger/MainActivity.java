@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         llLatLng = findViewById(R.id.ll_latlng);
 
 
-        switch (locationType){
+        switch (locationType) {
             case Device_Sensors:
 
                 break;
@@ -210,7 +210,9 @@ public class MainActivity extends AppCompatActivity {
                         stopLocation();
                         tvHeight.setText("0");
                         tvTime.setText("00:00");
-                        tvDistance.setText("0");
+
+                        distance = 0;
+                        setTvDistance();
                         tvLat.setText("0");
                         tvLng.setText("0");
                         AppUtil.killApp(0);
@@ -482,7 +484,7 @@ public class MainActivity extends AppCompatActivity {
                     sb.append("海拔: " + location.getAltitude() + "\n");
 
                     if (location.getAltitude() >= 0) {
-                        String format1 = new DecimalFormat("#.00").format(location.getAltitude());
+                        String format1 = new DecimalFormat("#0.00").format(location.getAltitude());
                         tvHeight.setText(format1 + "m");
                     }
 
@@ -508,16 +510,8 @@ public class MainActivity extends AppCompatActivity {
 
                     distance = distance + location.getSpeed() * 1;
 
-                    distance = 2120.1f;
-                    if (distance < 1000) {
-                        int distanceInt = new Float(distance).intValue();
-                        tvDistance.setText(distanceInt + "m");
-                    } else {
-                        Float distanceInt = new Float(distance) / 1000;
-//                        String format1 = new DecimalFormat("#.00").format(distanceInt);
-                        String format1 = new DecimalFormat("#.##").format(distanceInt);
-                        tvDistance.setText(format1 + "km");
-                    }
+
+                    setTvDistance();
 
                     sb.append("角    度    : " + location.getBearing() + "\n");
                     // 获取当前提供定位服务的卫星个数
@@ -563,6 +557,28 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    private void setTvDistance() {
+        Float distanceInt = new Float(distance) / 1000;
+
+        if (distanceInt >= 9999) {
+            distance = 0;
+            distanceInt = 0f;
+        }
+        if (distance < 10) {
+            String format1 = new DecimalFormat("#0.000").format(distanceInt);
+            tvDistance.setText(format1 + "km");
+        } else if (distance > 10 && distance < 100) {
+            String format1 = new DecimalFormat("#0.00").format(distanceInt);
+            tvDistance.setText(format1 + "km");
+        } else if (distance >= 100 && distance < 1000) {
+            String format1 = new DecimalFormat("#0.0").format(distanceInt);
+            tvDistance.setText(format1 + "km");
+        } else if (distance >= 1000) {
+            String format1 = new DecimalFormat("#").format(distanceInt);
+            tvDistance.setText(format1 + "km");
+        }
+    }
 
 
     public String gpxTrackPoint(double lat, double lon, double ele, long time) {
