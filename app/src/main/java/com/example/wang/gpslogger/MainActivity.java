@@ -115,6 +115,14 @@ public class MainActivity extends AppCompatActivity {
 
         FileUtil.getRandomFilePath(mContext, "", true);
 
+        setTvHeight(0);
+        tvTime.setText("00:00");
+        setTvDistance(0);
+
+        setTvLat(0.0);
+
+        setTvLng(0.0);
+
         initListener();
     }
 
@@ -211,8 +219,7 @@ public class MainActivity extends AppCompatActivity {
                         tvHeight.setText("0");
                         tvTime.setText("00:00");
 
-                        distance = 0;
-                        setTvDistance();
+                        setTvDistance(0);
                         tvLat.setText("0");
                         tvLng.setText("0");
                         AppUtil.killApp(0);
@@ -483,25 +490,18 @@ public class MainActivity extends AppCompatActivity {
 
                     sb.append("海拔: " + location.getAltitude() + "\n");
 
-                    if (location.getAltitude() >= 0) {
-                        String format1 = new DecimalFormat("#0.00").format(location.getAltitude());
-                        tvHeight.setText(format1 + "m");
-                    }
+                    setTvHeight(location.getAltitude());
 
                     sb.append("定位类型: " + location.getLocationType() + "\n");
 
                     sb.append("经    度    : " + location.getLongitude() + "\n");
                     sb.append("纬    度    : " + location.getLatitude() + "\n");
 
-                    double longitude = location.getLongitude();
 
-                    String formatLatLng = getFormatLatLng(longitude);
+                    setTvLat(location.getLongitude());
 
-                    tvLat.setText(formatLatLng);
+                    setTvLng(location.getLatitude());
 
-                    String formatLatLng1 = getFormatLatLng(location.getLatitude());
-
-                    tvLng.setText(formatLatLng1);
 
                     sb.append("精    度    : " + location.getAccuracy() + "米" + "\n");
                     sb.append("提供者    : " + location.getProvider() + "\n");
@@ -511,7 +511,7 @@ public class MainActivity extends AppCompatActivity {
                     distance = distance + location.getSpeed() * 1;
 
 
-                    setTvDistance();
+                    setTvDistance(distance);
 
                     sb.append("角    度    : " + location.getBearing() + "\n");
                     // 获取当前提供定位服务的卫星个数
@@ -558,7 +558,26 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private void setTvDistance() {
+    private void setTvLng(double location) {
+        String formatLatLng1 = getFormatLatLng(location);
+
+        tvLng.setText(formatLatLng1);
+    }
+
+    private void setTvLat(double location) {
+        String formatLatLng1 = getFormatLatLng(location);
+
+        tvLat.setText(formatLatLng1);
+    }
+
+    private void setTvHeight(double altitude) {
+        if (altitude >= 0) {
+            String format1 = new DecimalFormat("#0.00").format(altitude);
+            tvHeight.setText(format1 + "m");
+        }
+    }
+
+    private void setTvDistance(float distance) {
         Float distanceInt = new Float(distance) / 1000;
 
         if (distanceInt >= 9999) {
