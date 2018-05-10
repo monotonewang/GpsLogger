@@ -3,6 +3,7 @@ package com.example.wang.gpslogger;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.LocationManager;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private String fileName;
 
     LocationType locationType = LocationType.Hight_Accuracy;
+    private boolean providerEnabled;
 
     public enum LocationType {
         Device_Sensors,//GPS 设备模式
@@ -98,17 +100,7 @@ public class MainActivity extends AppCompatActivity {
         llLatLng = findViewById(R.id.ll_latlng);
 
 
-        switch (locationType) {
-            case Device_Sensors:
-
-                break;
-            case Hight_Accuracy:
-
-                if (!NetWorkUtils.isNetWorkConnected(mContext)) {
-                    toastShow("请检查网络连接");
-                }
-                break;
-        }
+        isHardwareOpen();
 
         //初始化定位
         initLocation();
@@ -124,6 +116,32 @@ public class MainActivity extends AppCompatActivity {
         setTvLng(0.0);
 
         initListener();
+    }
+
+    private boolean isHardwareOpen() {
+        switch (locationType) {
+            case Device_Sensors:
+                LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+                // 判断GPS模块是否开启，如果没有则开启
+                providerEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+                if (!providerEnabled) {
+                    toastShow("请检查GPS是否打开");
+                    return false;
+                }
+
+                System.out.println("---------providerEnabled=" + providerEnabled);
+                break;
+            case Hight_Accuracy:
+
+                if (!NetWorkUtils.isNetWorkConnected(mContext)) {
+                    toastShow("请检查网络连接");
+                    return false;
+                }
+                break;
+        }
+        return true;
+
     }
 
     private void initListener() {
@@ -246,6 +264,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (!isStart) {
+
+                    if (!isHardwareOpen()) return;
+
                     tvStart.setText("停止");
                     //根据控件的选择，重新设置定位参数
                     resetOption();
@@ -426,7 +447,6 @@ public class MainActivity extends AppCompatActivity {
     private AMapLocationClientOption getDefaultOption() {
         AMapLocationClientOption mOption = new AMapLocationClientOption();
 
-
         switch (locationType) {
             case Device_Sensors:
                 mOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Device_Sensors);//GPS 设备模式
@@ -455,6 +475,7 @@ public class MainActivity extends AppCompatActivity {
 
     AMapLocation locationTemp;
     int index = 0;
+
     /**
      * 定位监听
      */
@@ -466,14 +487,15 @@ public class MainActivity extends AppCompatActivity {
                 locationTemp = location;
                 tvStatus.setVisibility(View.GONE);
 
-                if (index == 0) {
-                    toastShow("定位成功");
-                    index++;
-                }
-
                 StringBuffer sb = new StringBuffer();
                 //errCode等于0代表定位成功，其他的为定位失败，具体的可以参照官网定位错误码说明
                 if (location.getErrorCode() == 0) {
+
+                    if (index == 0) {
+                        toastShow("定位成功");
+                        index++;
+                    }
+
                     sb.append("定位成功" + "\n");
 
 //                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
