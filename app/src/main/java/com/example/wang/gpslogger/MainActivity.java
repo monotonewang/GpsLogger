@@ -196,13 +196,13 @@ public class MainActivity extends AppCompatActivity {
                 } else if (pointCount == 1) {
                     toastShow("请先添加兴趣点");
                 } else {
-                    try {
-                        gpxLogWriter.flush();
-                        gpxLogWriter.close();
-                        toastShow("保存成功 文件名称" + fileName + ".gpx");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                        try {
+                            gpxLogWriter.flush();
+                            gpxLogWriter.close();
+                            toastShow("保存成功 文件名称" + fileName + ".gpx");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                 }
 
             }
@@ -280,10 +280,10 @@ public class MainActivity extends AppCompatActivity {
 
                         System.out.println("--------------------filename" + fileName);
 
-                        gpxLogWriter = new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + filePath + "/"
+                        String filePathTemp = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + filePath + "/"
                                 + fileName
-                                + ".gpx"
-                        );
+                                + ".gpx";
+                        gpxLogWriter = new FileWriter(filePathTemp);
                         gpxLogWriter.write(xmlHeader + gpxTrackHeader);
                     } catch (Exception e) {
                         gpxLogWriter = null;
