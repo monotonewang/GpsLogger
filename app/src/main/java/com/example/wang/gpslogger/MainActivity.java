@@ -80,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    StringBuffer stringBuffer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +109,12 @@ public class MainActivity extends AppCompatActivity {
 
         FileUtil.getRandomFilePath(mContext, "", true);
 
+        initTvData();
+
+        initListener();
+    }
+
+    private void initTvData() {
         setTvHeight(0);
         tvTime.setText("00:00");
         setTvDistance(0);
@@ -114,8 +122,6 @@ public class MainActivity extends AppCompatActivity {
         setTvLat(0.0);
 
         setTvLng(0.0);
-
-        initListener();
     }
 
     private boolean isHardwareOpen() {
@@ -161,15 +167,21 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
 
-                            if (gpxLogWriter == null)
-                                return;
-                            try {
-                                pointCount++;
-                                gpxLogWriter.append(gpxTrackPoint(locationTemp.getLatitude(), locationTemp.getLongitude(), locationTemp.getAltitude(), locationTemp.getTime()));
 
-                            } catch (Exception e) {
-                                gpxLogWriter = null;
-                            }
+                            pointCount++;
+
+                            stringBuffer.append(gpxTrackPoint(locationTemp.getLatitude(), locationTemp.getLongitude(), locationTemp.getAltitude(), locationTemp.getTime()));
+
+//                            if (gpxLogWriter == null)
+//                                return;
+//                            try {
+//
+//                                gpxLogWriter.append(gpxTrackPoint(locationTemp.getLatitude(), locationTemp.getLongitude(), locationTemp.getAltitude(), locationTemp.getTime()));
+//
+//                            } catch (Exception e) {
+//                                gpxLogWriter = null;
+//                            }
+
                             dialogInterface.dismiss();
 
 
@@ -191,18 +203,33 @@ public class MainActivity extends AppCompatActivity {
         tvSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (gpxLogWriter == null) {
+                if (index == 0) {
                     toastShow("请先开启里程");
                 } else if (pointCount == 1) {
                     toastShow("请先添加兴趣点");
                 } else {
-                        try {
-                            gpxLogWriter.flush();
-                            gpxLogWriter.close();
-                            toastShow("保存成功 文件名称" + fileName + ".gpx");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+
+                    try {
+                        fileName = getFileName();
+
+                        System.out.println("--------------------filename" + fileName);
+
+                        String filePathTemp = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + filePath + "/"
+                                + fileName
+                                + ".gpx";
+                        gpxLogWriter = new FileWriter(filePathTemp);
+                        gpxLogWriter.write(stringBuffer.toString());
+                    } catch (Exception e) {
+                        gpxLogWriter = null;
+                    }
+
+                    try {
+                        gpxLogWriter.flush();
+                        gpxLogWriter.close();
+                        toastShow("保存成功 文件名称" + fileName + ".gpx");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
             }
@@ -234,12 +261,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
                         stopLocation();
-                        tvHeight.setText("0");
-                        tvTime.setText("00:00");
 
-                        setTvDistance(0);
-                        tvLat.setText("0");
-                        tvLng.setText("0");
+                        initTvData();
+
                         AppUtil.killApp(0);
                     }
                 });
@@ -267,6 +291,7 @@ public class MainActivity extends AppCompatActivity {
 
                     if (!isHardwareOpen()) return;
 
+
                     tvStart.setText("停止");
                     //根据控件的选择，重新设置定位参数
                     resetOption();
@@ -274,20 +299,12 @@ public class MainActivity extends AppCompatActivity {
                     locationClient.setLocationOption(locationOption);
                     // 启动定位
                     locationClient.startLocation();
-                    try {
 
-                        fileName = getFileName();
+                    stringBuffer = new StringBuffer();
+                    stringBuffer.append(xmlHeader);
+                    stringBuffer.append(gpxTrackHeader);
 
-                        System.out.println("--------------------filename" + fileName);
 
-                        String filePathTemp = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + filePath + "/"
-                                + fileName
-                                + ".gpx";
-                        gpxLogWriter = new FileWriter(filePathTemp);
-                        gpxLogWriter.write(xmlHeader + gpxTrackHeader);
-                    } catch (Exception e) {
-                        gpxLogWriter = null;
-                    }
                     isStart = true;
                 } else {
 
@@ -474,6 +491,7 @@ public class MainActivity extends AppCompatActivity {
     float distance = 0;//当前里程数
 
     AMapLocation locationTemp;
+
     int index = 0;
 
     /**
