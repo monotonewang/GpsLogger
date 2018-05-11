@@ -18,6 +18,37 @@ public class ExampleUnitTest {
     }
 
     @Test
+    public void testInteger() {
+
+
+        int i=1;
+        String str=String.format("%03d",i);
+        //0代表前面补零，3代表输出3位，根据你的需要修改即可。
+        System.out.print(str);
+
+//        float distance = 11222f;
+//
+//        Float distanceInt = new Float(distance) / 1000;
+//        if (distance >= 9999) {
+//            distance = 0;
+//            distanceInt = 0f;
+//        }
+//        if (distance < 10) {
+//            String format1 = new DecimalFormat("#0.000").format(distanceInt);
+//            System.out.println(format1);
+//        } else if (distance > 10 && distance < 100) {
+//            String format1 = new DecimalFormat("#0.00").format(distanceInt);
+//            System.out.println(format1);
+//        } else if (distance >= 100 && distance < 1000) {
+//            String format1 = new DecimalFormat("#0.01").format(distanceInt);
+//            System.out.println(format1);
+//        } else if (distance >= 1000) {
+//            String format1 = new DecimalFormat("#").format(distanceInt);
+//            System.out.println(format1);
+//        }
+    }
+
+    @Test
     public void testList() {
 
         float distance = 11222f;

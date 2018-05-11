@@ -20,6 +20,8 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.example.wang.gpslogger.accelerometer.Location_Activity;
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -55,11 +57,16 @@ public class MainActivity extends AppCompatActivity {
 
     int pointCount = 1;
 
-    static String xmlHeader = "<?xml version='1.0' encoding='Utf-8' standalone='yes' ?>";
-    static String gpxTrackHeader = "<gpx xmlns=\"http://www.topografix.com/GPX/1/0\" version=\"1.0\" creator=\"org.yriarte.tracklogger\">\n<trk>\n<trkseg>\n";
-    static String gpxTrackFooter = "\n</trkseg>\n</trk>\n</gpx>\n";
+    static String xmlHeader = "<?xml version='1.0' encoding='Utf-8' standalone='yes' ?>\n";
+    static String gpxTrackHeader = "<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" creator=\"MapSource 6.5\" version=\"1.1\"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\">\n";
+    static String gpxTrackFooter = "</gpx>\n";
 
 
+    private StringBuffer headStringBuffer = new StringBuffer();
+    private StringBuffer metaStringBuffer = new StringBuffer();
+    private StringBuffer footStringBuffer = new StringBuffer();
+
+    StringBuffer stringBuffer;
     FileWriter gpxLogWriter;
     private TextView tvSetting;
     private TextView tvClose;
@@ -68,6 +75,10 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivSettings;
 
     String filePath = "/GPS data";
+
+    List<Double> latList = new ArrayList<>();
+    List<Double> lngList = new ArrayList<>();
+
     private String fileName;
 
     LocationType locationType = LocationType.Hight_Accuracy;
@@ -80,13 +91,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    StringBuffer stringBuffer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Logger.addLogAdapter(new AndroidLogAdapter());
 
         tvSetting = findViewById(R.id.tv_setting);
         tvClose = findViewById(R.id.tv_close);
@@ -168,10 +179,16 @@ public class MainActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialogInterface, int i) {
 
 
+                            stringBuffer.append(gpxTrackPoint(locationTemp.getLatitude(), locationTemp.getLongitude(), locationTemp.getAltitude(), locationTemp.getTime(), locationTemp.getPoiName()));
+
                             pointCount++;
 
-                            stringBuffer.append(gpxTrackPoint(locationTemp.getLatitude(), locationTemp.getLongitude(), locationTemp.getAltitude(), locationTemp.getTime()));
+                            String metaStringBuffer = getMetaStringBuffer(locationTemp);
+                            if (!TextUtils.isEmpty(metaStringBuffer)) {
+                                MainActivity.this.metaStringBuffer.delete(0, metaStringBuffer.length());//清空stringBuffer
+                                MainActivity.this.metaStringBuffer.append(metaStringBuffer);
 
+                            }
 //                            if (gpxLogWriter == null)
 //                                return;
 //                            try {
@@ -209,6 +226,8 @@ public class MainActivity extends AppCompatActivity {
                     toastShow("请先添加兴趣点");
                 } else {
 
+                    latList.clear();
+                    lngList.clear();
                     try {
                         fileName = getFileName();
 
@@ -218,7 +237,13 @@ public class MainActivity extends AppCompatActivity {
                                 + fileName
                                 + ".gpx";
                         gpxLogWriter = new FileWriter(filePathTemp);
+                        gpxLogWriter.write(headStringBuffer.toString());
+                        gpxLogWriter.write(metaStringBuffer.toString());
+
                         gpxLogWriter.write(stringBuffer.toString());
+
+                        footStringBuffer.append(gpxTrackFooter);
+                        gpxLogWriter.write(footStringBuffer.toString());
                     } catch (Exception e) {
                         gpxLogWriter = null;
                     }
@@ -301,8 +326,8 @@ public class MainActivity extends AppCompatActivity {
                     locationClient.startLocation();
 
                     stringBuffer = new StringBuffer();
-                    stringBuffer.append(xmlHeader);
-                    stringBuffer.append(gpxTrackHeader);
+                    headStringBuffer.append(xmlHeader);
+                    headStringBuffer.append(gpxTrackHeader);
 
 
                     isStart = true;
@@ -332,6 +357,42 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private String getMetaStringBuffer(AMapLocation mapLocation) {
+
+        double maxLat = 0;
+        double maxLng = 0;
+        double minLat = 0;
+        double minLng = 0;
+        if (latList != null && !latList.isEmpty()) {
+            maxLat = Collections.max(latList);
+            minLat = Collections.min(latList);
+        }
+        if (lngList != null && !lngList.isEmpty()) {
+            maxLng = Collections.max(lngList);
+            minLng = Collections.min(lngList);
+        }
+
+        if (maxLat == 0 || minLat == 0 || maxLng == 0 || minLng == 0) return "";
+
+        String wpt = "<metadata>\n";
+        wpt += " <link href=\"http://www.garmin.com\">\n";
+        wpt += "  <text>Garmin International</text>\n";
+        wpt += " </link>\n";
+        byte timebytes[] = new Timestamp(mapLocation.getTime()).toString().getBytes();
+        timebytes[10] = 'T';
+        timebytes[19] = 'Z';
+        wpt += " <time>" + new String(timebytes).substring(0, 20) + "</time>\n";
+
+        wpt += " <bounds maxlat=\"" + maxLat + "\"  " + "maxlon=\"" + maxLng + "\" " + "minLat=\"" + minLat + "" + "minlon=\"" + minLng + "/>\n";
+
+        wpt += "</metadata>\n";
+
+        Logger.d(wpt);
+
+        return wpt;
+
     }
 
     private String getFileName() {
@@ -406,7 +467,7 @@ public class MainActivity extends AppCompatActivity {
         if (gpxLogWriter == null)
             return;
         try {
-            gpxLogWriter.append(gpxTrackFooter);
+//            gpxLogWriter.append(gpxTrackFooter);
             gpxLogWriter.close();
         } catch (Exception e) {
         }
@@ -640,17 +701,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public String gpxTrackPoint(double lat, double lon, double ele, long time) {
-        String trkpt = "<trkpt";
-        trkpt += " lon=\"" + Double.valueOf(lon).toString() + "\"";
-        trkpt += " lat=\"" + Double.valueOf(lat).toString() + "\"";
-        trkpt += ">\n  <ele>" + Double.valueOf(ele).toString() + "</ele>\n";
+    public String gpxTrackPoint(double lat, double lon, double ele, long time, String poiName) {
+        latList.add(lat);
+        lngList.add(lon);
+        String wpt = "<wpt";
+        wpt += " lat=\"" + Double.valueOf(lat).toString() + "\"";
+        wpt += " lon=\"" + Double.valueOf(lon).toString() + "\"" + ">\n";
         byte timebytes[] = new Timestamp(time).toString().getBytes();
         timebytes[10] = 'T';
         timebytes[19] = 'Z';
-        trkpt += "  <time>" + new String(timebytes).substring(0, 20) + "</time>\n";
-        trkpt += "</trkpt>\n";
-        return trkpt;
+        wpt += " <time>" + new String(timebytes).substring(0, 20) + "</time>\n";
+        wpt += " <name>" + String.format("%03d", pointCount) + poiName + "</name>\n";
+        wpt += " <cmt>" + poiName + "</cmt>\n";
+        wpt += " <desc>" + poiName + "</desc>\n";
+        wpt += " <sym>" + "City (Large)" + "</sym>\n";
+        wpt += "</wpt>\n";
+
+        Logger.d(wpt);
+
+        return wpt;
     }
 
     private String getFormatLatLng(double longitude) {
