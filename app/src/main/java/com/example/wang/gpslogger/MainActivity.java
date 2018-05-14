@@ -39,6 +39,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+//屏幕翻转∂
+
 public class MainActivity extends AppCompatActivity {
 
     private AMapLocationClientOption locationOption = null;
@@ -262,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
         ivSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, Location_Activity.class));
+//                startActivity(new Intent(MainActivity.this, Location_Activity.class));
             }
         });
 

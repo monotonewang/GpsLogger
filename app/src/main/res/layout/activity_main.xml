@@ -53,7 +53,7 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center"
                 android:text="关闭"
-                android:textSize="35sp" />
+                android:textSize="30sp" />
 
             <View
                 android:layout_width="1dp"
@@ -68,7 +68,7 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center"
                 android:text="开始"
-                android:textSize="35sp" />
+                android:textSize="30sp" />
 
             <View
                 android:layout_width="1dp"
@@ -83,7 +83,7 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center"
                 android:text="保存"
-                android:textSize="35sp" />
+                android:textSize="30sp" />
         </LinearLayout>
 
         <View

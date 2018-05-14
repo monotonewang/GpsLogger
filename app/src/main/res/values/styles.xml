@@ -14,11 +14,11 @@
     </style>
 
     <style name="textSize">
-        <item name="android:textSize">89sp</item>
+        <item name="android:textSize">70sp</item>
     </style>
 
     <style name="textSize2">
-        <item name="android:textSize">49sp</item>
+        <item name="android:textSize">40sp</item>
     </style>
 
 </resources>
